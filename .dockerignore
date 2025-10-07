@@ -1,0 +1,40 @@
+# === Virtual environments ===
+venv/
+env/
+.venv/
+
+# === Python bytecode ===
+*.pyc
+*.pyo
+__pycache__/
+
+# === Git & CI/CD files ===
+.git/
+.gitignore
+.github/
+.jenkins/
+.jenkinsfile
+Jenkinsfile
+
+# === Logs and reports ===
+*.log
+logs/
+test-reports/
+coverage/
+htmlcov/
+
+# === Local configuration ===
+*.env
+.env
+*.sqlite3
+
+# === OS / Editor junk ===
+*.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# === Docker build artifacts ===
+*.bak
+*.tmp
+*.swp
