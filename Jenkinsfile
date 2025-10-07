@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'python:3.12-slim'
+            args '-v /var/run/docker.sock:/var/run/docker.sock'
+        }
+    }
 
     environment {
         DOCKER_IMAGE = 'daivalokesh/my-django-application'
@@ -14,31 +19,35 @@ pipeline {
             }
         }
 
-    stage('Install Dependencies') {
-        steps {
-            sh '''
-            python3 -m venv venv
-            ./venv/bin/pip install --upgrade pip
-            ./venv/bin/pip install -r requirements.txt
-            '''
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
+            }
         }
-    }
-
 
         stage('Run Tests') {
             steps {
                 sh '''
                 mkdir -p ${TEST_REPORT_DIR}
-                pytest --junitxml=${TEST_REPORT_DIR}/results.xml > ${TEST_REPORT_DIR}/test_output.log 2>&1 || true
+                pytest --junitxml=${TEST_REPORT_DIR}/results.xml --html=${TEST_REPORT_DIR}/report.html > ${TEST_REPORT_DIR}/test_output.log 2>&1 || true
                 '''
                 junit "${TEST_REPORT_DIR}/results.xml"
+                publishHTML(target: [
+                    reportDir: TEST_REPORT_DIR,
+                    reportFiles: 'report.html',
+                    reportName: 'HTML Test Report',
+                    keepAll: true,
+                    alwaysLinkToLastBuild: true
+                ])
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Only rebuild if Dockerfile or requirements.txt changed
                     def changed = sh(script: "git diff --name-only HEAD~1 HEAD | grep -E 'Dockerfile|requirements.txt' || true", returnStdout: true).trim()
                     if (changed) {
                         echo "Changes detected in Dockerfile/requirements.txt. Building Docker Image..."
@@ -54,9 +63,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
-                    script {
-                        sh "docker push ${DOCKER_IMAGE}"
-                    }
+                    sh "docker push ${DOCKER_IMAGE}"
                 }
             }
         }
@@ -83,8 +90,7 @@ pipeline {
 
     post {
         always {
-            echo "Cleaning up local Docker images..."
-            sh "docker rmi ${DOCKER_IMAGE} || true"
+            echo "Cleaning up workspace..."
             archiveArtifacts artifacts: 'test-reports/**', allowEmptyArchive: true
         }
         failure {
