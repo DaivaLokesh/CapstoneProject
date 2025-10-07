@@ -1,0 +1,26 @@
+Django>=3.0,<4.0
+django-crispy-forms
+razorpay  # For Razorpay integration
+django-bootstrap4  # For Bootstrap integration in Django templates
+crispy-bootstrap4
+
+
+# Gunicorn for production server
+gunicorn==21.2.0
+
+# Testing & coverage
+pytest==8.2.0
+pytest-django==4.5.2
+coverage==7.3.2
+pytest-cov==4.1.0
+pytest-html==4.3.1
+
+# Monitoring & logging
+prometheus-client==0.17.1
+loguru==0.7.0
+
+# Environment management
+python-dotenv==1.0.0
+
+# Optional utilities
+requests==2.32.0
