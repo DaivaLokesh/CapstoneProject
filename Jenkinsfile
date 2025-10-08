@@ -12,16 +12,21 @@ pipeline {
         git branch: 'master', url: 'https://github.com/DaivaLokesh/CapstoneProject.git'
         }
     }
-            stage('Run Tests') {
-        steps {
-            sh 'pytest --junitxml=reports/test-results.xml --maxfail=1 --disable-warnings'
-        }
-        post {
-            always {
-                junit 'reports/test-results.xml'
-            }
+          stage('Run Tests') {
+    steps {
+        sh '''
+        pip install -r requirements.txt
+        pip install pytest pytest-cov
+        pytest --junitxml=reports/test-results.xml --maxfail=1 --disable-warnings
+        '''
+    }
+    post {
+        always {
+            junit 'reports/test-results.xml'
         }
     }
+}
+
 
 
         stage('Build Docker Image') {
