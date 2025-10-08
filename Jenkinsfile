@@ -13,14 +13,20 @@ pipeline {
     }
     }
 
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    echo "Building Docker Image: ${DOCKER_IMAGE}"
-                    sh "docker build -t ${DOCKER_IMAGE} ."
-                }
+       stage('Build Docker Image') {
+    steps {
+        script {
+            docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
+                sh '''
+                  docker pull daivalokesh/my-django-application:latest || true
+                  docker build --cache-from=daivalokesh/my-django-application:latest -t daivalokesh/my-django-application:latest .
+                  docker push daivalokesh/my-django-application:latest
+                '''
             }
         }
+    }
+}
+
 
         stage('Docker Login') {
             steps {
