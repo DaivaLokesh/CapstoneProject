@@ -12,20 +12,28 @@ pipeline {
         git branch: 'master', url: 'https://github.com/DaivaLokesh/CapstoneProject.git'
     }
     }
-
-       stage('Build Docker Image') {
+    stage('Test') {
     steps {
-        script {
-            docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                sh '''
-                  docker pull daivalokesh/my-django-application:latest || true
-                  docker build --cache-from=daivalokesh/my-django-application:latest -t daivalokesh/my-django-application:latest .
-                  docker push daivalokesh/my-django-application:latest
-                '''
-            }
+        sh '''
+        pip install -r requirements.txt
+        pytest --junitxml=reports/test-results.xml --cov=. --cov-report=xml:reports/coverage.xml
+        '''
+    }
+    post {
+        always {
+            junit 'reports/test-results.xml'
         }
     }
 }
+
+      stage('Build Docker Image') {
+            steps {
+                script {
+                    echo "Building Docker Image: ${DOCKER_IMAGE}"
+                    sh "docker build -t ${DOCKER_IMAGE} ."
+                }
+            }
+        }
 
 
         stage('Docker Login') {
