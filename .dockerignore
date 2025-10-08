@@ -1,40 +1,16 @@
-# === Virtual environments ===
 venv/
-env/
-.venv/
 
-# === Python bytecode ===
+# Ignore Python bytecode files
 *.pyc
-*.pyo
 __pycache__/
 
-# === Git & CI/CD files ===
+# Ignore git files
 .git/
-.gitignore
-.github/
-.jenkins/
-.jenkinsfile
-Jenkinsfile
 
-# === Logs and reports ===
-*.log
-logs/
-test-reports/
-coverage/
-htmlcov/
+# Ignore system-specific files
+*.DS_Store  # macOS system files
+*.log        # log files
 
-# === Local configuration ===
+# Ignore any local configuration files
 *.env
-.env
 *.sqlite3
-
-# === OS / Editor junk ===
-*.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-
-# === Docker build artifacts ===
-*.bak
-*.tmp
-*.swp
