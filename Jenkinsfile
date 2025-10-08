@@ -10,31 +10,32 @@ pipeline {
         stage('Clone Repository') {
     steps {
         git branch: 'master', url: 'https://github.com/DaivaLokesh/CapstoneProject.git'
-    }
-    }
-    stage('Test') {
-    steps {
-        sh '''
-        pip install -r requirements.txt
-        pytest --junitxml=reports/test-results.xml --cov=. --cov-report=xml:reports/coverage.xml
-        '''
-    }
-    post {
-        always {
-            junit 'reports/test-results.xml'
         }
     }
-}
-
-      stage('Build Docker Image') {
+        stage('Run Tests') {
             steps {
-                script {
-                    echo "Building Docker Image: ${DOCKER_IMAGE}"
-                    sh "docker build -t ${DOCKER_IMAGE} ."
+                sh 'pytest --junitxml=reports/test-results.xml --maxfail=1 --disable-warnings'
+            }
+            post {
+                always {
+                    junit 'reports/test-results.xml'
                 }
             }
         }
 
+        stage('Build Docker Image') {
+            when {
+                expression { currentBuild.result == null || currentBuild.result == 'SUCCESS' }
+            }
+            steps {
+                sh '''
+                  docker pull myuser/myapp:latest || true
+                  docker build --cache-from=myuser/myapp:latest -t myuser/myapp:latest .
+                  docker push myuser/myapp:latest
+                '''
+            }
+        }
+    
 
         stage('Docker Login') {
             steps {
